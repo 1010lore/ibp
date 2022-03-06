@@ -14,7 +14,7 @@ statement
   / let_statement
 
 let_statement "let statement"
- = "let" _ name:identifier _ "=" _ value:expression _ ";" { return { name: name, value: value }; }
+  = "let" _ name:identifier _ "=" _ value:expression _ ";" { return { name: name, value: value }; }
 
 if_statement "if statement"
   = "if" _ "(" _ cond:expression _ ")" _ "{" _ body:statement* _ "}" {
