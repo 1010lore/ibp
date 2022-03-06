@@ -4,6 +4,6 @@
     "pegjs": "^0.10.0"
   },
   "scripts": {
-    "parser": "pegjs src/program.pegjs"
+    "parser": "pegjs -o src/program_parser.js src/program.pegjs"
   }
 }

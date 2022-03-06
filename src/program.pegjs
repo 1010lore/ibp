@@ -9,7 +9,7 @@ start
   = body:(_ statement _)* { return body.map(e => e[1]); }
 
 statement
-  = "{" _ body:(if_statement / let_statement)* _ "}" { return body; }
+  = "{" body:(_ (if_statement / let_statement) _)* _ "}" { return body.map(e => e[1]); }
   / if_statement
   / let_statement
 
