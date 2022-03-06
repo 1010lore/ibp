@@ -1,0 +1,9 @@
+{
+  "name": "ibp",
+  "devDependencies": {
+    "pegjs": "^0.10.0"
+  },
+  "scripts": {
+    "parser": "pegjs src/program.pegjs"
+  }
+}
