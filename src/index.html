@@ -10,8 +10,8 @@
 
   <body>
     <div class="navbar">
-      <a href="/">IBP</a>&emsp;
-      <a href="/docs.html">Docs</a>&emsp;
+      <a href="index.html">IBP</a>&emsp;
+      <a href="docs.html">Docs</a>&emsp;
       <a href="https://github.com/AjayMT/ibp">Source Code</a>&emsp;
       <a href="https://1010labs.org">About</a>
     </div>
@@ -23,16 +23,18 @@
         <code>for (int i = 0; true; ++i) {</code>
         <div id="editor" style="min-height:300px;">if (i % 2 == 0) {}
 if (i % 4 == 0) {}</div>
-        <code>}</code><br/>
+        <code>}</code><br />
+        <span id="programError" style="color: red;"></span><br />
         <button id="compile">Compile</button>
       </div>
 
       <div>
         <h4>Branch Predictor</h4>
-        <button>Step</button><br/>
-        <button>Run</button>
+        <span id="predictorError" style="color: red;"></span><br />
+        <button id="step">Step</button><br/>
+        <button id="run">Run</button>
         for
-        <input type="number" value="100" />
+        <input type="number" value="100" id="iterations" />
         iterations
       </div>
 
