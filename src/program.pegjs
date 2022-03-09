@@ -9,8 +9,7 @@ start
   = body:(_ statement _)* { return body.map(e => e[1]); }
 
 statement
-  = "{" body:(_ (if_statement / let_statement) _)* _ "}" { return body.map(e => e[1]); }
-  / if_statement
+  = if_statement
   / let_statement
 
 let_statement "let statement"
@@ -45,7 +44,6 @@ equality "equality"
 
 compare "compare"
   = head:shift tail:(_ (">" / "<" / ">=" / "<=") _ shift)* { return tail.reduce(reduceOp, head); }
-
 
 shift "shift"
   = head:additive tail:(_ (">>" / "<<") _ additive)* { return tail.reduce(reduceOp, head); }
