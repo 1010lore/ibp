@@ -21,7 +21,7 @@
       <div>
         <h4>Program</h4>
         <code>for (int i = 0; true; ++i) {</code>
-        <div id="editor" style="min-height:300px;">if (i % 2 == 0) {}
+        <div id="editor" style="min-height: 300px;">if (i % 2 == 0) {}
 if (i % 4 == 0) {}</div>
         <code>}</code><br />
         <span id="programError" style="color: red;"></span><br />
@@ -30,12 +30,32 @@ if (i % 4 == 0) {}</div>
 
       <div>
         <h4>Branch Predictor</h4>
+        <code id="iterationLabel">i = 0</code><br />
         <span id="predictorError" style="color: red;"></span><br />
-        <button id="step">Step</button><br/>
+        <button id="step">Step</button><br />
         <button id="run">Run</button>
         for
         <input type="number" value="100" id="iterations" />
-        iterations
+        iterations<br />
+        <button id="reset">Reset</button><br />
+        <br />
+        <div class="box">
+          Parameters:<br />
+          <strong>M = </strong><input type="number" id="M" value="4"/> (entries per table)<br />
+          <strong>N = </strong>
+          <select id="N">
+            <option value="1">1 bit</option>
+            <option value="2F">2 bit FSM</option>
+          </select> (bits per entry)<br />
+          <strong>P = </strong><input type="number" id="P" value="1"/> (shift register size)<br />
+          <button id="update">Update</button>
+        </div><br />
+        <div class="box">
+          Predictor:<br />
+          <strong>SR = </strong><span id="SR">0</span><br />
+          <table id="table">
+          </table>
+        </div>
       </div>
 
       <div>

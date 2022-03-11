@@ -1,5 +1,5 @@
-let editor = ace.edit("editor");
-let Range = ace.require("ace/range").Range;
+const editor = ace.edit("editor");
+const Range = ace.require("ace/range").Range;
 editor.session.setMode("ace/mode/javascript");
 editor.session.setUseWorker(false);
 
@@ -10,24 +10,39 @@ function clearMarkers() {
     editor.session.removeMarker(markers[marker].id);
 }
 
-let compileButton = document.getElementById("compile");
-let programErrorMessage = document.getElementById("programError");
-let predictorErrorMessage = document.getElementById("predictorError");
-let stepButton = document.getElementById("step");
-let runButton = document.getElementById("run");
-let runIterations = document.getElementById("iterations");
+const compileButton = document.getElementById("compile");
+const programErrorMessage = document.getElementById("programError");
+const predictorErrorMessage = document.getElementById("predictorError");
+const stepButton = document.getElementById("step");
+const runButton = document.getElementById("run");
+const resetButton = document.getElementById("reset");
+const runIterations = document.getElementById("iterations");
+const iterationLabel = document.getElementById("iterationLabel");
+const inM = document.getElementById("M");
+const inN = document.getElementById("N");
+const inP = document.getElementById("P");
+const updateButton = document.getElementById("update");
+const predictorView = document.getElementById("table");
+const SRView = document.getElementById("SR");
 
-let parseProgram = module.exports.parse;
+const parseProgram = module.exports.parse;
 let verified = false;
-let programAST = {};
+let programAST = [];
 let currentIteration = 0;
-let evaluationContextStack = [
-  { table: { i: 0 }, statement: 0, block: programAST },
-];
+let evaluationContextStack = [];
+let predictorTables = [];
+let M = 4;
+let SRWidth = 1;
+let SR = 0;
+
+function updateIteration(i) {
+  currentIteration = i;
+  iterationLabel.innerText = `i = ${i}`;
+}
 
 editor.session.on("change", function () {
   if (verified) {
-    currentIteration = 0;
+    updateIteration(0);
     evaluationContextStack = [];
     clearMarkers();
   }
@@ -83,7 +98,8 @@ compileButton.onclick = function () {
     evaluationContextStack = [
       { table: { i: 0 }, statement: 0, block: programAST },
     ];
-    if (programAST.length > 0)
+
+    if (programAST.length > 0) {
       editor.session.addMarker(
         new Range(
           programAST[0].loc.start.line - 1,
@@ -94,13 +110,14 @@ compileButton.onclick = function () {
         "line-marker",
         "fullLine"
       );
+    }
   } catch (e) {
     programErrorMessage.innerText = e.message;
   }
 };
 
 function nextIteration() {
-  currentIteration++;
+  updateIteration(currentIteration + 1);
   evaluationContextStack = [
     { table: { i: currentIteration }, statement: 0, block: programAST },
   ];
@@ -233,10 +250,16 @@ runButton.onclick = async function () {
     return;
   }
 
+  if (iterations < 0) {
+    predictorErrorMessage.innerText = "# iterations must be positive";
+    return;
+  }
+
   if (!verified) {
     predictorErrorMessage.innerText = "Compile first!";
     return;
   }
+
   predictorErrorMessage.innerText = "";
 
   let startIteration = currentIteration;
@@ -244,4 +267,91 @@ runButton.onclick = async function () {
     step();
     await sleep(100);
   }
+};
+
+reset.onclick = function () {
+  updateIteration(0);
+  evaluationContextStack = [
+    { table: { i: 0 }, statement: 0, block: programAST },
+  ];
+  clearMarkers();
+  editor.session.addMarker(
+    new Range(
+      programAST[0].loc.start.line - 1,
+      0,
+      programAST[0].loc.end.line - 1,
+      1
+    ),
+    "line-marker",
+    "fullLine"
+  );
+};
+
+function updatePredictor() {
+  let m = inM.value;
+  let n = inN.value;
+  let p = inP.value;
+
+  try {
+    m = parseInt(m);
+    p = parseInt(p);
+  } catch (e) {
+    predictorErrorMessage.innerText = e.message;
+    return;
+  }
+
+  if (m < 0 || p < 0) {
+    predictorErrorMessage.innerText = "M and P must be positive";
+    return;
+  }
+
+  predictorErrorMessage.innerText = "";
+
+  let tableCount = 2 ** p;
+  predictorTables = [];
+  for (let i = 0; i < tableCount; ++i) {
+    let table = [];
+    for (let j = 0; j < m; ++j) table.push({ type: n, bits: [0, 0] });
+
+    predictorTables.push(table);
+  }
+
+  SRWidth = p;
+  SR = 0;
+  M = m;
+}
+
+function predict(entry) {
+  if (entry.type === "1") return entry.bits[0];
+  if (entry.bits[1] === 0) return 0;
+  return 1;
+}
+
+function displayPredictor(highlight) {
+  predictorView.innerHTML = "";
+  let headerRow = predictorView.insertRow();
+  headerRow.insertCell(0).innerText = "PC";
+  headerRow.insertCell(1).innerText = "Value";
+  headerRow.insertCell(2).innerText = "Prediction";
+
+  let table = predictorTables[SR];
+  for (let i = 0; i < table.length; ++i) {
+    let row = predictorView.insertRow();
+    if (highlight === i) row.style.background = "#ff9";
+    row.insertCell(0).innerText = i.toString();
+    let valueCell = row.insertCell(1);
+    if (table[i].type === "1")
+      valueCell.innerText = table[i].bits[0].toString();
+    else valueCell.innerText = `${table[i].bits[1]}${table[i].bits[0]}`;
+    row.insertCell(2).innerText = predict(table[i]).toString();
+  }
+
+  SRView.innerText = (SR >>> 0).toString(2);
+}
+
+updatePredictor();
+displayPredictor();
+updateButton.onclick = function () {
+  updatePredictor();
+  displayPredictor();
 };

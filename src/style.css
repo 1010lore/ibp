@@ -39,3 +39,17 @@ code {
     background: #ff9;
     z-index: 20;
 }
+
+input {
+    width: 50px;
+}
+
+.box {
+    background-color: #eee;
+    padding: 1px;
+}
+
+table * {
+    border: 1px solid #000;
+    min-width: 50px;
+}
