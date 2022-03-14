@@ -67,6 +67,9 @@ function verifyExpr(table, expr) {
 
   if (typeof expr !== "object") return null;
 
+  if ("arg" in expr) return verifyExpr(table, expr.arg);
+  if ("unOp" in expr) return verifyExpr(table, expr.operand);
+
   let err = verifyExpr(table, expr.left);
   if (err) return err;
 
@@ -174,8 +177,28 @@ function evalExpression(expr, table) {
   if (typeof expr === "number") return expr;
   if (typeof expr === "string") return table[expr];
 
+  if ("arg" in expr) {
+    let arg = evalExpression(expr.arg, table);
+    let res = 0;
+    if (arg > 0) res = Math.floor(Math.random() * arg);
+    else res = Math.ceil(Math.random() * arg);
+    return res;
+  }
+
+  if ("unOp" in expr) {
+    let res = evalExpression(expr.operand, table);
+    switch (expr.unOp) {
+      case "!":
+        return res === 0;
+      case "~":
+        return ~res;
+    }
+    throw new Error("Could not evaluate expression: " + JSON.stringify(expr));
+  }
+
   let left = evalExpression(expr.left, table);
   let right = evalExpression(expr.right, table);
+
   switch (expr.op) {
     case "*":
       return left * right;
@@ -210,9 +233,9 @@ function evalExpression(expr, table) {
     case "|":
       return left | right;
     case "&&":
-      return left && right ? 1 : 0;
+      return left && right;
     case "||":
-      return left || right ? 1 : 0;
+      return left || right;
   }
 
   throw new Error("Could not evaluate expression: " + JSON.stringify(expr));
@@ -318,7 +341,6 @@ function step() {
     // if statement
     let cond = evalExpression(stmt.cond, currentContext.table);
     branchTaken = cond !== 0;
-
     runPredictor(stmt.loc.start.line, branchTaken);
     shiftRegister(branchTaken);
   }

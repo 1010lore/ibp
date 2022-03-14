@@ -40,10 +40,10 @@ bitwise_and "bitwise and"
   = head:equality tail:(_ "&" _ equality)* { return tail.reduce(reduceOp, head); }
 
 equality "equality"
-  = head:compare tail:(_ ("==" / "!=") _ compare)* { return tail.reduce(reduceOp, head); }
+  = head:compare tail:(_ ("!=" / "==") _ compare)* { return tail.reduce(reduceOp, head); }
 
 compare "compare"
-  = head:shift tail:(_ (">" / "<" / ">=" / "<=") _ shift)* { return tail.reduce(reduceOp, head); }
+  = head:shift tail:(_ (">=" / "<=" / ">" / "<") _ shift)* { return tail.reduce(reduceOp, head); }
 
 shift "shift"
   = head:additive tail:(_ (">>" / "<<") _ additive)* { return tail.reduce(reduceOp, head); }
@@ -56,10 +56,15 @@ additive "additive"
 multiplicative "multiplicative"
   = head:factor tail:(_ ("*" / "/" / "%") _ factor)* { return tail.reduce(reduceOp, head); }
 
+unOp "unary operand"
+  = op:("!" / "~") _ operand:factor { return { unOp: op, operand: operand }; }
+
 factor "factor"
   = "(" _ expr:expression _ ")" { return expr; }
+  / "rand(" _ expr:expression _ ")" { return { arg: expr }; }
   / integer
   / identifier
+  / unOp
 
 integer "integer"
   = ([0-9]+ / ("0b" [01]+) / ("0x" [0-9a-fa-f]+) / ("0o" [0-7]+)) { return parseInt(text()); }
