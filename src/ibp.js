@@ -26,6 +26,11 @@ const predictorView = document.getElementById("table");
 const SRView = document.getElementById("SR");
 const lastPredictionLabel = document.getElementById("lastPrediction");
 const pcLabel = document.getElementById("PC");
+const totalBranchesLabel = document.getElementById("totalBranches");
+const correctPredictionsLabel = document.getElementById("correctPredictions");
+const accuracyLabel = document.getElementById("accuracy");
+const accuracyTable = document.getElementById("accuracyTable");
+const resetAccuracyButton = document.getElementById("resetAccuracy");
 
 const parseProgram = module.exports.parse;
 let verified = false;
@@ -36,6 +41,10 @@ let predictorTables = [];
 let M = 4;
 let SRWidth = 1;
 let SR = 0;
+let totalBranches = 0;
+let correctPredictions = 0;
+let pcBranches = {};
+let pcCorrectPredictions = {};
 
 function updateIteration(i) {
   currentIteration = i;
@@ -117,6 +126,41 @@ compileButton.onclick = function () {
   } catch (e) {
     programErrorMessage.innerText = e.message;
   }
+};
+
+function displayAccuracy() {
+  totalBranchesLabel.innerText = totalBranches.toString();
+  correctPredictionsLabel.innerText = correctPredictions.toString();
+  if (totalBranches > 0)
+    accuracyLabel.innerText = (correctPredictions / totalBranches).toFixed(3);
+  else accuracyLabel.innerText = "?";
+
+  accuracyTable.innerHTML = "";
+  if (Object.keys(pcBranches).length === 0) return;
+
+  let headerRow = accuracyTable.insertRow();
+  headerRow.insertCell(0).innerText = "PC";
+  headerRow.insertCell(1).innerText = "Branches";
+  headerRow.insertCell(2).innerText = "Correct Predictions";
+  headerRow.insertCell(3).innerText = "Accuracy";
+
+  for (const pc of Object.keys(pcBranches)) {
+    let cp = 0;
+    if (pc in pcCorrectPredictions) cp = pcCorrectPredictions[pc];
+    let row = accuracyTable.insertRow();
+    row.insertCell(0).innerText = pc.toString();
+    row.insertCell(1).innerText = pcBranches[pc].toString();
+    row.insertCell(2).innerText = cp.toString();
+    row.insertCell(3).innerText = (cp / pcBranches[pc]).toFixed(3);
+  }
+}
+
+resetAccuracyButton.onclick = function () {
+  totalBranches = 0;
+  correctPredictions = 0;
+  pcBranches = {};
+  pcCorrectPredictions = {};
+  displayAccuracy();
 };
 
 function nextIteration() {
@@ -223,10 +267,17 @@ function updatePredictorEntry(entry, branchTaken) {
 }
 
 function runPredictor(pc, branchTaken) {
+  totalBranches++;
+  if (pc in pcBranches) pcBranches[pc]++;
+  else pcBranches[pc] = 1;
+
   let table = predictorTables[SR];
   let entry = table[pc % M];
   let prediction = predict(entry) === 1;
   if (prediction === branchTaken) {
+    correctPredictions++;
+    if (pc in pcCorrectPredictions) pcCorrectPredictions[pc]++;
+    else pcCorrectPredictions[pc] = 1;
     lastPredictionLabel.innerText = "Correct";
     lastPredictionLabel.style.background = "#0f0";
   } else {
@@ -235,6 +286,7 @@ function runPredictor(pc, branchTaken) {
   }
 
   updatePredictorEntry(entry, branchTaken);
+  displayAccuracy();
 }
 
 function shiftRegister(branchTaken) {

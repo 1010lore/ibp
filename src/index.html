@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="style.css" rel="stylesheet" />
     <title>IBP</title>
   </head>
@@ -17,21 +17,20 @@
     </div>
 
     <div class="three-cols">
-
       <div>
         <h4>Program</h4>
         <code>for (int i = 0; true; ++i) {</code>
-        <div id="editor" style="min-height: 300px;">if (i % 2 == 0) {}
+        <div id="editor" style="min-height: 300px">if (i % 2 == 0) {}
 if (i % 4 == 0) {}</div>
         <code>}</code><br />
-        <span id="programError" style="color: red;"></span><br />
+        <span id="programError" style="color: red"></span><br />
         <button id="compile">Compile</button>
       </div>
 
       <div>
         <h4>Branch Predictor</h4>
         <code id="iterationLabel">i = 0</code><br />
-        <span id="predictorError" style="color: red;"></span><br />
+        <span id="predictorError" style="color: red"></span><br />
         <button id="step">Step</button><br />
         <button id="run">Run</button>
         for
@@ -41,20 +40,24 @@ if (i % 4 == 0) {}</div>
         <br />
         <div class="box">
           Parameters:<br />
-          <strong>M = </strong><input type="number" id="M" value="4"/> (entries per table)<br />
+          <strong>M = </strong><input type="number" id="M" value="4" /> (entries
+          per table)<br />
           <strong>N = </strong>
           <select id="N">
             <option value="1">1 bit</option>
             <option value="2F">2 bit FSM</option>
-          </select> (bits per entry)<br />
-          <strong>P = </strong><input type="number" id="P" value="1"/> (shift register size)<br />
+          </select>
+          (bits per entry)<br />
+          <strong>P = </strong><input type="number" id="P" value="1" /> (shift
+          register size)<br />
           <button id="update">Update</button>
-        </div><br />
+        </div>
+        <br />
         <div class="box">
           Predictor:<br />
           <strong>SR = </strong><span id="SR">0</span><br />
-          <table id="table">
-          </table><br />
+          <table id="table"></table>
+          <br />
           PC: <span id="PC"></span><br />
           Last prediction: <span id="lastPrediction"></span>
         </div>
@@ -62,12 +65,22 @@ if (i % 4 == 0) {}</div>
 
       <div>
         <h4>Accuracy</h4>
+        Total branches = <span id="totalBranches"></span><br />
+        Correct predictions = <span id="correctPredictions"></span><br />
+        <strong>Accuracy = </strong><span id="accuracy"></span><br />
+        <table id="accuracyTable"></table>
+        <button id="resetAccuracy">Reset</button>
       </div>
-
     </div>
 
-    <script src="https://pagecdn.io/lib/ace/1.4.5/ace.js" integrity="sha256-5Xkhn3k/1rbXB+Q/DX/2RuAtaB4dRRyQvMs83prFjpM=" crossorigin="anonymous"></script>
-    <script type="text/javascript">let module = {};</script>
+    <script
+      src="https://pagecdn.io/lib/ace/1.4.5/ace.js"
+      integrity="sha256-5Xkhn3k/1rbXB+Q/DX/2RuAtaB4dRRyQvMs83prFjpM="
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript">
+      let module = {};
+    </script>
     <script type="text/javascript" src="program_parser.js"></script>
     <script type="text/javascript" src="ibp.js"></script>
   </body>
