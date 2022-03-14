@@ -192,6 +192,8 @@ function evalExpression(expr, table) {
         return res === 0;
       case "~":
         return ~res;
+      case "-":
+        return -res;
     }
     throw new Error("Could not evaluate expression: " + JSON.stringify(expr));
   }

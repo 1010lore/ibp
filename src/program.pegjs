@@ -57,7 +57,7 @@ multiplicative "multiplicative"
   = head:factor tail:(_ ("*" / "/" / "%") _ factor)* { return tail.reduce(reduceOp, head); }
 
 unOp "unary operand"
-  = op:("!" / "~") _ operand:factor { return { unOp: op, operand: operand }; }
+  = op:("!" / "~" / "-") _ operand:factor { return { unOp: op, operand: operand }; }
 
 factor "factor"
   = "(" _ expr:expression _ ")" { return expr; }
