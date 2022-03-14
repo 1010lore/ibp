@@ -24,6 +24,8 @@ const inP = document.getElementById("P");
 const updateButton = document.getElementById("update");
 const predictorView = document.getElementById("table");
 const SRView = document.getElementById("SR");
+const lastPredictionLabel = document.getElementById("lastPrediction");
+const pcLabel = document.getElementById("PC");
 
 const parseProgram = module.exports.parse;
 let verified = false;
@@ -110,6 +112,7 @@ compileButton.onclick = function () {
         "line-marker",
         "fullLine"
       );
+      pcLabel.innerText = programAST[0].loc.start.line;
     }
   } catch (e) {
     programErrorMessage.innerText = e.message;
@@ -199,6 +202,47 @@ function nextStatement(branchTaken) {
   nextIteration();
 }
 
+function predict(entry) {
+  if (entry.type === "1") return entry.bits[0];
+  return entry.bits[1];
+}
+
+function updatePredictorEntry(entry, branchTaken) {
+  let bit = branchTaken ? 1 : 0;
+  if (entry.type === "1") {
+    entry.bits[0] = bit;
+    return;
+  }
+  let predicted = entry.bits[1];
+  if (predicted === bit) entry.bits[0] = entry.bits[1];
+  else if (entry.bits[0] === entry.bits[1]) entry.bits[0] = bit;
+  else {
+    entry.bits[1] = bit;
+    entry.bits[0] = 1 - bit;
+  }
+}
+
+function runPredictor(pc, branchTaken) {
+  let table = predictorTables[SR];
+  let entry = table[pc % M];
+  let prediction = predict(entry) === 1;
+  if (prediction === branchTaken) {
+    lastPredictionLabel.innerText = "Correct";
+    lastPredictionLabel.style.background = "#0f0";
+  } else {
+    lastPredictionLabel.innerText = "Incorrect";
+    lastPredictionLabel.style.background = "#f00";
+  }
+
+  updatePredictorEntry(entry, branchTaken);
+}
+
+function shiftRegister(branchTaken) {
+  if (SRWidth === 0) return;
+  let bit = branchTaken ? 1 : 0;
+  SR = ((SR << 1) | bit) & ((1 << SRWidth) - 1);
+}
+
 function step() {
   if (!verified) {
     predictorErrorMessage.innerText = "Compile first!";
@@ -222,6 +266,9 @@ function step() {
     // if statement
     let cond = evalExpression(stmt.cond, currentContext.table);
     branchTaken = cond !== 0;
+
+    runPredictor(stmt.loc.start.line, branchTaken);
+    shiftRegister(branchTaken);
   }
 
   nextStatement(branchTaken);
@@ -234,6 +281,10 @@ function step() {
     "line-marker",
     "fullLine"
   );
+  pcLabel.innerText = stmt.loc.start.line;
+  let predictorHighlight = null;
+  if ("cond" in stmt) predictorHighlight = stmt.loc.start.line % M;
+  displayPredictor(predictorHighlight);
 }
 
 function sleep(ms) {
@@ -269,22 +320,29 @@ runButton.onclick = async function () {
   }
 };
 
-reset.onclick = function () {
+resetButton.onclick = function () {
   updateIteration(0);
-  evaluationContextStack = [
-    { table: { i: 0 }, statement: 0, block: programAST },
-  ];
-  clearMarkers();
-  editor.session.addMarker(
-    new Range(
-      programAST[0].loc.start.line - 1,
-      0,
-      programAST[0].loc.end.line - 1,
-      1
-    ),
-    "line-marker",
-    "fullLine"
-  );
+  if (verified) {
+    evaluationContextStack = [
+      { table: { i: 0 }, statement: 0, block: programAST },
+    ];
+    clearMarkers();
+    if (programAST.length > 0) {
+      editor.session.addMarker(
+        new Range(
+          programAST[0].loc.start.line - 1,
+          0,
+          programAST[0].loc.end.line - 1,
+          1
+        ),
+        "line-marker",
+        "fullLine"
+      );
+      pcLabel.innerText = programAST[0].loc.start.line;
+    }
+  }
+  updatePredictor();
+  displayPredictor();
 };
 
 function updatePredictor() {
@@ -319,12 +377,6 @@ function updatePredictor() {
   SRWidth = p;
   SR = 0;
   M = m;
-}
-
-function predict(entry) {
-  if (entry.type === "1") return entry.bits[0];
-  if (entry.bits[1] === 0) return 0;
-  return 1;
 }
 
 function displayPredictor(highlight) {
