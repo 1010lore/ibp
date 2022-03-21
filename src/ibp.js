@@ -284,11 +284,8 @@ function updatePredictorEntry(entry, branchTaken) {
   }
   let predicted = entry.bits[1];
   if (predicted === bit) entry.bits[0] = entry.bits[1];
-  else if (entry.bits[0] === entry.bits[1]) entry.bits[0] = bit;
-  else {
-    entry.bits[1] = bit;
-    entry.bits[0] = 1 - bit;
-  }
+  else if (entry.bits[0] === bit) entry.bits[1] = bit;
+  else entry.bits[0] = bit;
 }
 
 function runPredictor(pc, branchTaken) {
