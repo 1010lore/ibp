@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="style.css" rel="stylesheet" />
+    <title>IBP</title>
+  </head>
+
+  <body>
+    <div class="navbar">
+      <a href="index.html">IBP</a>&emsp; <a href="docs.html">Docs</a>&emsp;
+      <a href="https://github.com/1010lore/ibp">Source Code</a>&emsp;
+      <a href="https://1010labs.org">About</a>
+    </div>
+
+    <div class="docs">
+      IBP is the <strong>Interactive Branch Predictor</strong>. It simulates a
+      <a
+        href="https://en.wikipedia.org/wiki/Branch_predictor#Global_branch_prediction"
+        >global history correlating branch predictor</a
+      >
+      that consists of multiple prediction tables indexed by a shift register
+      that tracks branch history. The branch prediction mechanism is described
+      in more detail
+      <a href="https://1010labs.org/~ajaymt/branch-predictors">here</a>; this
+      document is an overview of the IBP interface.
+
+      <h1 id="interface">Interface</h1>
+      <div><img src="interface.webp" style="max-height: 500px" /></div>
+      <div>
+        The IBP interface consists of the <strong>Program</strong> View,
+        <strong>Branch Predictor</strong> View and
+        <strong>Accuracy</strong> View.
+      </div>
+      <div>
+        Program syntax and semantics are described in the
+        <a href="#program_language">Program Language</a> section below. The
+        Program View displays editable program text and highlights the next
+        statement to be executed. The "Compile" button checks the validity of
+        the program and enables execution.
+      </div>
+      <div>
+        The Branch Predictor View displays the current iteration and the state
+        of the branch predictor.
+        <ul>
+          <li>
+            The "Step" button executes a statement and advances to the next
+            statement or iteration.
+          </li>
+          <li>The "Run" button runs the specified number of iterations.</li>
+          <li>
+            The "Reset" button resets the current iteration and the state of the
+            branch predictor.
+          </li>
+          <li>
+            The "Update" button changes the parameters of the predictor as
+            specified and resets its state.
+          </li>
+        </ul>
+        The Predictor View displays the current predictor table as selected by
+        the shift register and highlights the corresponding table entry if the
+        next statement is a conditional branch (if), as well as the current PC
+        and the result of the last prediction. The PC of each statement is its
+        <em>line number</em> displayed in the editor.
+      </div>
+      <div>
+        The Accuracy view displays the accuracy of the branch predictor. The
+        "Reset" button resets the accuracy and the count of
+        branches/predictions.
+      </div>
+
+      <h1 id="program_language">Program Language</h1>
+      <div>
+        The IBP Program Language is syntactically and semantically very similar
+        to C:
+      </div>
+      <pre class="box"><code>let a = 1;
+if (a < 2) {
+  let b = rand(12);
+  let c = b << 2;
+  if (c > b) {}
+}</code></pre>
+      <div>
+        A single program is a list of statements. Statements can be of two
+        forms:
+        <ol>
+          <li>
+            <code>let &lt;identifier&gt; = &lt;expression&gt;;</code><br />
+            "Let" statements bind the identifier to the result of the expression
+            within the current scope. Identifiers must begin with an alphabet or
+            underscore and be followed by zero or more alphabets, underscores or
+            digits.
+          </li>
+          <br />
+          <li>
+            <code>if (&lt;expression&gt;) { [&lt;statement&gt;] }</code><br />
+            "If" statements are the branches that are predicted. As in C,
+            conditional expressions that evaluate to zero are treated as false
+            and non-zero values are treated as true. The branch is considered
+            <strong>taken</strong> when the condition is true and is
+            <strong>not taken</strong> when the condition is false. The
+            statements in the "body" of the if statement execute within a new
+            scope that inherits the variables defined in its parent scope.
+          </li>
+        </ol>
+      </div>
+      <div>
+        Expressions can be one of:
+        <ul>
+          <li>
+            <strong>Number literals:</strong> These are decimal integer
+            literals, or hexadecimal, octal or binary integer literals prefixed
+            with <code>0x</code>, <code>0o</code> and
+            <code>0b</code> respectively.
+          </li>
+          <li>
+            <strong>Variables:</strong> These are identifiers that are bound to
+            a value in the current scope or a parent scope. The variable
+            <code>i</code> is defined implicitly and is the loop counter.
+          </li>
+          <li>
+            <strong>Unary or binary operations:</strong> These operate on one or
+            two expressions respectively. The IBP Program Language has the same
+            set of operators as
+            <a
+              href="https://en.cppreference.com/w/c/language/operator_precedence"
+              >C and C++</a
+            >
+            with the same precedence, with the exception of the ternary
+            (<code>?:</code>), assignment (<code>+=, -=, *=</code> etc.) and
+            increment/decrement (<code>++, --</code>) operators.
+          </li>
+          <li>
+            <strong>Random numbers:</strong> The built-in
+            <code>rand(n)</code> "function" produces a random integer between
+            zero and <code>n</code> (inclusive) where <code>n</code> is any
+            expression.
+          </li>
+        </ul>
+      </div>
+      <div>
+        Notably, every expression evaluates to a <strong>number</strong>. This
+        is a JavaScript number and not an integer, which means division is not
+        floored: <code>1 / 2</code> is 0.5 and not 0.
+      </div>
+      <div>
+        The entire language is specified in
+        <a href="program.pegjs">this PEG file</a>.
+      </div>
+    </div>
+  </body>
+</html>

@@ -24,7 +24,11 @@ code {
     padding: 10px;
 }
 
-.navbar {
+.docs > div {
+    padding-top: 1em;
+}
+
+.navbar, .docs {
     padding: 15px;
     max-width: 1200px;
     margin: auto;
